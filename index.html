@@ -70,7 +70,7 @@ function dateObj(s){var v=String(s||"").slice(0,10);return /^\d{4}-\d{2}-\d{2}$/
 function now(){return localKey(new Date())}
 function advance(s,n){var d=dateObj(s);d.setDate(d.getDate()+n);return localKey(d)}
 function days(a,b){return Math.round((dateObj(b)-dateObj(a))/86400000)}
-function nextFirst(t){var d=dateObj(t);return localKey(new Date(d.getFullYear(),d.getMonth()+1,1,12))}
+function nextSecond(t){var d=dateObj(t);return localKey(new Date(d.getFullYear(),d.getMonth()+1,2,12))}
 function dim(y,m){return new Date(y,m+1,0).getDate()}
 function occurrence(first,freq,n){
  var d=dateObj(first);if(isNaN(d.getTime()))return "";
@@ -163,7 +163,7 @@ function getEvents(until){
  return {list:list,late:late,missing:missing}
 }
 function forecast(){
- var t=now(),first=nextFirst(t),until=advance(t,Math.max(S.horizonDays,days(t,first),60)),r=getEvents(until),balance=currentBalance();
+ var t=now(),first=nextSecond(t),until=advance(t,Math.max(S.horizonDays,days(t,first),60)),r=getEvents(until),balance=currentBalance();
  var byDay={};r.list.forEach(function(x){(byDay[x.date]||(byDay[x.date]=[])).push(x)});
  var end=balance,low=balance,firstBalance=balance,firstBills=0,firstIncome=0;
  for(var date=t;date<=until;date=advance(date,1)){
@@ -193,10 +193,10 @@ function home(){
  (late?'<div class="warn">'+late+' past-due bill occurrence(s) are not marked paid. They are protected in this estimate.</div>':'')+'</section>'+
  '<div class="quick"><button data-act="newtx" data-kind="expense" class="out"><i>−</i> Record spending</button><button data-act="newtx" data-kind="income"><i>+</i> Record income</button></div>'+
  '<section class="card"><div class="section-title"><h2>What if I spend…?</h2></div><label for="scenario">Try an amount (nothing will be charged)</label><div class="money-input"><span>$</span><input id="scenario" type="number" min="0" inputmode="decimal" step="0.01" placeholder="0.00" value="'+esc(scenario)+'"></div>'+
- '<div class="split"><span>Expected balance '+when(f.first)+'</span><b>'+cash(f.firstBalance)+'</b></div>'+
- '<div class="split"><span>After that pretend purchase</span><b class="strong" id="result">'+cash(f.firstBalance-val)+'</b></div>'+
+ '<div class="split"><span>Expected balance '+when(f.first)+' after bills</span><b>'+cash(f.firstBalance)+'</b></div>'+
+ '<div class="split"><span>After your pretend purchase</span><b class="strong" id="result">'+cash(f.firstBalance-val)+'</b></div>'+
  '<div class="status '+(fits?"":"bad")+'" id="fit">'+(!val?"Enter a purchase amount above.":fits?"Within your safe-to-spend budget.":"May leave too little for upcoming bills or savings.")+'</div>'+
- '<p class="tiny">Balance at the end of the 1st, after payments scheduled that day. Bills due after the 1st (such as your mortgage) are not subtracted from that snapshot. Your safe-to-spend total does protect bills later in the planning window.</p></section>'+
+ '<p class="tiny">Balance at the end of the 2nd of next month, after all bills and income scheduled through that day. This includes your mortgage if it is due on the 2nd. Your safe-to-spend total also protects later bills in the planning window.</p></section>'+
  '<section class="card"><div class="section-title"><h2>Coming up</h2><button class="link-btn" data-act="tab" data-to="bills">Bills ›</button></div>'+
  '<div class="small-grid"><div><small>Next bill</small><strong>'+(f.nextBill?cash(f.nextBill.amount):"—")+'</strong><em>'+(f.nextBill?esc(f.nextBill.name)+" · "+when(f.nextBill.date):"Nothing scheduled")+'</em></div>'+
  '<div><small>Next income</small><strong>'+(f.nextIncome?cash(f.nextIncome.amount):"—")+'</strong><em>'+(f.nextIncome?esc(f.nextIncome.name)+" · "+when(f.nextIncome.date):"No amount scheduled")+'</em></div></div>'+
