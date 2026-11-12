@@ -203,7 +203,7 @@ function settings(){
  field("openingBalance","Your starting bank balance ($)",S.openingBalance,"number",'step="0.01" required inputmode="decimal"')+
  field("openingDate","Date this balance was checked",S.openingDate,"date","required")+
  field("savingsTarget","Savings to protect ($)",S.savingsTarget,"number",'min="0" step="0.01" required inputmode="decimal"')+
- '<div class="form-row"><label>Look ahead</label><select name="horizonDays">'+[14,30,45,60,90,120,180].map(function(n){return '<option value="'+n+'" '+(S.horizonDays===n?"selected":"")+'>'+n+' days</option>'}).join("")+'</select></div><button class="save">Save settings</button></form>'+
+ '<div class="form-row"><label>Look ahead</label><select name="horizonDays">'+[14,30,45,60,90,120,180].map(function(n){return '<option value="'+n+'" '+(S.horizonDays===n?"selected":"")+'>'+n+' days</option>'}).join("")+'</select></div><button class="save" type="submit">Save settings</button></form>'+
  '<p class="tiny">When changing the starting balance to what USAA shows today, change its date to today too. Old transactions stay in history but are not added again.</p></section>'+
  '<section class="card"><div class="section-title"><h2>Back up your money</h2></div><p class="muted">Your numbers stay on this device. Download a backup before switching phones or clearing Safari data.</p>'+
  '<button class="add secondary" data-act="export">Download backup</button><label class="file-button">Import a saved budget <input id="importBackup" type="file" accept=".json,application/json"></label>'+
@@ -223,19 +223,19 @@ function sheet(){
    field("date","Date money moved",x.date||now(),"date","required")+
    '<input type="hidden" name="kind" value="'+esc(x.kind||"expense")+'"><input type="hidden" name="linkId" value="'+esc(x.linkId||"")+'">'+
    '<input type="hidden" name="scheduledDate" value="'+esc(x.scheduledDate||"")+'">'+
-   '<p class="tiny">Do not record a paycheck that is already part of your starting bank balance.</p><button class="save">Save transaction</button></form>';
+   '<p class="tiny">Do not record a paycheck that is already part of your starting bank balance.</p><button class="save" type="submit">Save transaction</button></form>';
  }else if(t==="bill"){
   name=x.id?"Edit bill":"New bill";body='<form id="editor"><input type="hidden" name="id" value="'+esc(x.id||"")+'">'+field("name","Bill name",x.name||"","text",'required maxlength="70"')+
   field("amount","Amount ($)",x.amount===undefined?"":x.amount,"number",'step="0.01" required min="0.01" inputmode="decimal"')+
   frequencies(x.frequency||"monthly")+field("nextDue","Next due date",x.nextDue||now(),"date","required")+
-  field("paidThrough","Paid through (optional)",x.paidThrough||"","date")+'<button class="save">Save bill</button></form>'+
+  field("paidThrough","Paid through (optional)",x.paidThrough||"","date")+'<button class="save" type="submit">Save bill</button></form>'+
   (x.id?'<button class="delete" data-act="deletebill" data-id="'+esc(x.id)+'">Delete bill</button>':"");
  }else if(t==="income"){
   name=x.id?"Edit income":"New income";body='<form id="editor"><input type="hidden" name="id" value="'+esc(x.id||"")+'">'+
   field("name","Income source",x.name||"","text",'required maxlength="70"')+
   field("amount","Expected amount ($)",x.amount===undefined?"":x.amount,"number",'required min="0.01" step="0.01" inputmode="decimal"')+
   frequencies(x.frequency||"monthly")+field("nextDate","Next deposit date",x.nextDate||now(),"date","required")+
-  '<p class="tiny">For GI Bill housing that changes, select One time and add each expected payment separately.</p><button class="save">Save income</button></form>'+
+  '<p class="tiny">For GI Bill housing that changes, select One time and add each expected payment separately.</p><button class="save" type="submit">Save income</button></form>'+
   (x.id?'<button class="delete" data-act="deleteincome" data-id="'+esc(x.id)+'">Delete income</button>':"");
  }else if(t==="school"){
   name=x.id?"Edit school payday":"New school payday";body='<form id="editor"><input type="hidden" name="id" value="'+esc(x.id||"")+'">'+
@@ -243,7 +243,7 @@ function sheet(){
   field("expectedDate","Expected USAA date",x.expectedDate||now(),"date","required")+
   field("amount","Expected take-home amount ($)",x.amount===null||x.amount===undefined?"":x.amount,"number",'step="0.01" min="0" inputmode="decimal"')+
   '<div class="form-row"><label>Already received?</label><select name="received"><option value="no" '+(!x.received?"selected":"")+'>No</option><option value="yes" '+(x.received?"selected":"")+'>Yes</option></select></div>'+
-  '<button class="save">Save payday</button></form>'+(x.id?'<button class="delete" data-act="deleteschool" data-id="'+esc(x.id)+'">Delete payday</button>':"");
+  '<button class="save" type="submit">Save payday</button></form>'+(x.id?'<button class="delete" data-act="deleteschool" data-id="'+esc(x.id)+'">Delete payday</button>':"");
  }else if(t==="past"){
   name="Previous paydays";
   body='<div class="row-list">'+S.schoolChecks.filter(function(x){return x.received||x.expectedDate<now()}).sort(function(a,b){return b.expectedDate.localeCompare(a.expectedDate)}).map(function(x){return '<div class="split"><div><b>'+when(x.expectedDate)+'</b><small style="display:block">'+(x.received?"Received":"Past expected date")+'</small></div><button class="link-btn" data-act="editschool" data-id="'+esc(x.id)+'">Edit</button></div>'}).join("")+'</div>';
@@ -308,10 +308,10 @@ document.addEventListener("click",function(e){
  }
 });
 document.addEventListener("submit",function(e){
- if(e.target.id!=="editor"&&e.target.id!=="settingsForm")return;
+ if(e.target.getAttribute("id")!=="editor"&&e.target.getAttribute("id")!=="settingsForm")return;
  e.preventDefault();
  var form=e.target,v=Object.fromEntries(new FormData(form).entries());
- if(form.id==="settingsForm"){
+ if(form.getAttribute("id")==="settingsForm"){
   if(v.openingDate>now())return alert("The starting date cannot be in the future.");
   S.openingBalance=num(v.openingBalance);S.openingDate=v.openingDate;S.savingsTarget=Math.max(0,num(v.savingsTarget));S.horizonDays=Number(v.horizonDays)||45
  }else if(modal&&modal.type==="tx"){
