@@ -84,10 +84,11 @@ function occurrence(first,freq,n){
 function when(s){if(!s)return "Not set";var d=dateObj(s);if(isNaN(d.getTime()))return "Not set";return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:d.getFullYear()===new Date().getFullYear()?undefined:"numeric"})}
 function id(){return "x"+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function freqLabel(s){return {monthly:"Monthly",yearly:"Yearly",weekly:"Weekly",biweekly:"Every 2 weeks",once:"One time"}[s]||"One time"}
-function fresh(){return {version:1,openingDate:now(),openingBalance:0,savingsTarget:0,horizonDays:45,bills:[],recurringIncome:[],schoolChecks:[],transactions:[]}}
+function fresh(){return {version:2,openingDate:now(),openingBalance:0,savingsTarget:0,horizonDays:45,bills:[],recurringIncome:[],schoolChecks:[],transactions:[],billExceptions:[]}}
 function normalize(){
  S.bills=Array.isArray(S.bills)?S.bills:[];S.recurringIncome=Array.isArray(S.recurringIncome)?S.recurringIncome:[];
  S.schoolChecks=Array.isArray(S.schoolChecks)?S.schoolChecks:[];S.transactions=Array.isArray(S.transactions)?S.transactions:[];
+ S.billExceptions=Array.isArray(S.billExceptions)?S.billExceptions:[];
  S.openingDate=S.openingDate||now();S.openingBalance=num(S.openingBalance);S.savingsTarget=Math.max(0,num(S.savingsTarget));
  S.horizonDays=Math.max(7,Math.min(180,Number(S.horizonDays)||45))
 }
@@ -99,7 +100,39 @@ function currentBalance(){
   return x.date>=S.openingDate&&x.date<=t?a+(x.kind==="income"?Number(x.amount)||0:-(Number(x.amount)||0)):a
  },0))
 }
-function hasLogged(kind,itemId,due){return S.transactions.some(function(x){return x.kind===kind&&x.linkId===itemId&&x.scheduledDate===due&&x.date>=S.openingDate})}
+function hasLogged(kind,itemId,due){return S.transactions.some(function(x){return x.kind===kind&&x.linkId===itemId&&x.scheduledDate===due})}
+function billException(billId,due){return S.billExceptions.find(function(x){return x.billId===billId&&x.dueDate===due})}
+function setBillException(billId,due,status){
+ S.billExceptions=S.billExceptions.filter(function(x){return !(x.billId===billId&&x.dueDate===due)});
+ if(status)S.billExceptions.push({billId:billId,dueDate:due,status:status})
+}
+function autoPostDueBills(){
+ if(!S)return 0;
+ var end=now(),created=0;
+ S.bills.forEach(function(b){
+  if(b.autoLog===false||!b.id||!b.nextDue||!b.name||!(Number(b.amount)>0))return;
+  for(var n=0;n<450;n++){
+   var due=occurrence(b.nextDue,b.frequency||"monthly",n);
+   if(!due||due>end)break;
+   // Opening balance is a snapshot of everything up through its own date.
+   if(due<=S.openingDate||(b.paidThrough&&due<=b.paidThrough)||billException(b.id,due)||hasLogged("bill",b.id,due))continue;
+   S.transactions.push({id:id(),kind:"bill",date:due,amount:num(b.amount),name:b.name,linkId:b.id,scheduledDate:due,auto:true});
+   created++;
+  }
+ });
+ if(created)save();
+ return created
+}
+function nextBillDate(b){
+ if(!b.nextDue)return "";
+ var t=now();
+ for(var n=0;n<450;n++){
+  var due=occurrence(b.nextDue,b.frequency||"monthly",n);
+  if(!due||due<t||due<=S.openingDate||(b.paidThrough&&due<=b.paidThrough)||hasLogged("bill",b.id,due)||(billException(b.id,due)||{}).status==="skipped")continue;
+  return due;
+ }
+ return ""
+}
 function getEvents(until){
  var t=now(),list=[],late=[],missing=[];
  S.bills.forEach(function(b){
@@ -107,7 +140,7 @@ function getEvents(until){
   var overdue=0;
   for(var n=0;n<450;n++){
    var due=occurrence(b.nextDue,b.frequency||"monthly",n);if(!due||due>until)break;
-   if(due<S.openingDate||b.paidThrough&&due<=b.paidThrough||hasLogged("bill",b.id,due))continue;
+   if(due<=S.openingDate||(b.paidThrough&&due<=b.paidThrough)||((billException(b.id,due)||{}).status==="skipped")||hasLogged("bill",b.id,due))continue;
    var o={kind:"bill",name:b.name,amount:Number(b.amount),date:due,scheduledDate:due,linkId:b.id};
    if(due<t){overdue++;o.date=t;o.overdue=true;late.push(o)}else list.push(o);
   }
@@ -168,17 +201,22 @@ function home(){
  '<div class="small-grid"><div><small>Next bill</small><strong>'+(f.nextBill?cash(f.nextBill.amount):"—")+'</strong><em>'+(f.nextBill?esc(f.nextBill.name)+" · "+when(f.nextBill.date):"Nothing scheduled")+'</em></div>'+
  '<div><small>Next income</small><strong>'+(f.nextIncome?cash(f.nextIncome.amount):"—")+'</strong><em>'+(f.nextIncome?esc(f.nextIncome.name)+" · "+when(f.nextIncome.date):"No amount scheduled")+'</em></div></div>'+
  '<div class="row-list">'+(top.map(function(x){return '<div>'+eventItem(x)+'</div>'}).join("")||'<p class="muted">Nothing scheduled.</p>')+'</div></section>'+
- '<p class="tiny">Money isn’t connected to your bank. Log transactions as they happen to keep these numbers useful.</p>'
+ '<p class="tiny">Bills are added as assumed charges on their due date the next time you open the app. Check USAA and correct charges in Log. No bank connection or background posting while closed.</p>'
 }
 function bills(){
- var f=forecast(),sorted=S.bills.slice().sort(function(a,b){return a.nextDue.localeCompare(b.nextDue)});
- return title("Your bills","YOUR PAYMENTS")+'<button class="add" data-act="editbill">+ Add bill</button>'+
+ var f=forecast(),sorted=S.bills.slice().sort(function(a,b){return String(a.nextDue||"").localeCompare(String(b.nextDue||""))});
+ return title("Your bills","YOUR PAYMENTS")+'<p class="muted">Bills with Auto-log on appear in the Money Log on their due date when you open the app. These entries are estimates until checked against USAA.</p><button class="add" data-act="editbill">+ Add bill</button>'+
  (sorted.map(function(b){
   var e=f.events.find(function(x){return x.kind==="bill"&&x.linkId===b.id});
-  return '<section class="item"><div class="row"><div class="left"><strong>'+esc(b.name)+'</strong><small>'+freqLabel(b.frequency)+' · Due '+when(e?e.scheduledDate:b.nextDue)+'</small></div><div class="amount">'+cash(b.amount)+'</div></div>'+
-  '<div class="actions"><button data-act="editbill" data-id="'+esc(b.id)+'">Edit</button><button class="pay" data-act="paybill" data-id="'+esc(b.id)+'" data-due="'+esc(e?e.scheduledDate:b.nextDue)+'">Mark paid</button></div></section>'
+  var due=e?e.scheduledDate:nextBillDate(b);
+  var isUnpaid=e&&((billException(b.id,e.scheduledDate)||{}).status==="unpaid");
+  var buttons='<button data-act="editbill" data-id="'+esc(b.id)+'">Edit bill</button>';
+  if(b.autoLog===false||isUnpaid)buttons+='<button class="pay" data-act="paybill" data-id="'+esc(b.id)+'" data-due="'+esc(due||b.nextDue)+'">Mark paid</button>';
+  else buttons+='<button class="pay" data-act="tab" data-to="log">View charges</button>';
+  return '<section class="item"><div class="row"><div class="left"><strong>'+esc(b.name)+'</strong><small>'+freqLabel(b.frequency)+' · '+(due?"Next "+when(due):"No more dates")+' · '+(b.autoLog===false?"Manual":isUnpaid?"Unpaid":"Auto-log on")+'</small></div><div class="amount">'+cash(b.amount)+'</div></div>'+
+  '<div class="actions">'+buttons+'</div></section>'
  }).join("")||'<div class="empty">Add your first bill.</div>')+
- '<p class="tiny">Mark a paid bill here so it reduces your balance and does not get counted a second time.</p>';
+ '<p class="tiny">Edit a bill to change its amount for future charges or stop the bill entirely. Old log entries remain until you remove them.</p>';
 }
 function incomes(){
  var checks=S.schoolChecks.slice().sort(function(a,b){return a.expectedDate.localeCompare(b.expectedDate)}),t=now();
@@ -192,10 +230,10 @@ function incomes(){
 }
 function history(){
  var records=S.transactions.slice().sort(function(a,b){return b.date.localeCompare(a.date)||String(b.id).localeCompare(String(a.id))});
- return title("Money log","ACTUAL TRANSACTIONS")+
+ return title("Money log","RECORDED & ASSUMED CHARGES")+
  '<div class="quick"><button class="out" data-act="newtx" data-kind="expense"><i>−</i> Spent money</button><button data-act="newtx" data-kind="income"><i>+</i> Received money</button></div>'+
- '<section class="card"><div class="section-title"><h2>Recent activity</h2></div>'+
- (records.slice(0,140).map(function(x){var plus=x.kind==="income";return '<div class="entry" style="padding:11px 0;border-bottom:1px solid #edf2f0"><div class="symbol '+(plus?"":"minus")+'">'+(plus?"↙":"↗")+'</div><div class="name"><b>'+esc(x.name)+'</b><small>'+when(x.date)+'</small></div><div class="value '+(plus?"positive":"negative")+'">'+(plus?"+":"−")+cash(x.amount)+'</div><button class="del" data-act="deltx" data-id="'+esc(x.id)+'" aria-label="Delete">×</button></div>'}).join("")||'<p class="muted">No spending logged yet. Your Nov 12 school paycheck is included in the starting balance.</p>')+'</section>';
+ '<section class="card"><div class="section-title"><h2>Recent activity</h2></div><p class="tiny">Automatic bill entries are assumed payments, not bank-confirmed. Use Edit to correct a charge or Remove if it did not happen.</p>'+
+ (records.slice(0,140).map(function(x){var plus=x.kind==="income";return '<div style="padding:12px 0;border-bottom:1px solid #edf2f0"><div class="entry"><div class="symbol '+(plus?"":"minus")+'">'+(plus?"↙":"↗")+'</div><div class="name"><b>'+esc(x.name)+'</b><small>'+when(x.date)+(x.auto?" · Auto-added, not bank-confirmed":x.kind==="bill"?" · Bill paid":"")+'</small></div><div class="value '+(plus?"positive":"negative")+'">'+(plus?"+":"−")+cash(x.amount)+'</div></div><div class="actions"><button data-act="edittx" data-id="'+esc(x.id)+'">Edit amount</button><button data-act="deltx" data-id="'+esc(x.id)+'">Remove</button></div></div>'}).join("")||'<p class="muted">No transactions logged since your starting balance.</p>')+'</section>';
 }
 function settings(){
  return title("Your settings","MAKE IT YOURS")+
@@ -217,19 +255,23 @@ function sheet(){
  if(!modal)return "";
  var t=modal.type,x=modal.data||{},body="",name="";
  if(t==="tx"){
-  name=x.kind==="bill"?"Mark bill paid":x.kind==="income"?"Record money received":"Record spending";
+  name=x.id?"Edit transaction":x.kind==="bill"?"Mark bill paid":x.kind==="income"?"Record money received":"Record spending";
   body='<form id="editor">'+field("name","What / where",x.name||"","text",'required maxlength="80"')+
-   field("amount","Amount ($)",x.amount||"","number",'required step="0.01" min="0.01" inputmode="decimal"')+
+   field("amount","Amount ($)",x.amount===undefined?"":x.amount,"number",'required step="0.01" min="0.01" inputmode="decimal"')+
    field("date","Date money moved",x.date||now(),"date","required")+
+   '<input type="hidden" name="txId" value="'+esc(x.id||"")+'">'+
    '<input type="hidden" name="kind" value="'+esc(x.kind||"expense")+'"><input type="hidden" name="linkId" value="'+esc(x.linkId||"")+'">'+
    '<input type="hidden" name="scheduledDate" value="'+esc(x.scheduledDate||"")+'">'+
-   '<p class="tiny">Do not record a paycheck that is already part of your starting bank balance.</p><button class="save" type="submit">Save transaction</button></form>';
+   (x.id&&x.kind==="bill"&&x.linkId?'<div class="form-row"><label>Bank confirmation</label><select name="assumed"><option value="yes" '+(x.auto?"selected":"")+'>Still assumed / not verified</option><option value="no" '+(!x.auto?"selected":"")+'>Confirmed or corrected from USAA</option></select></div>':'')+
+   '<p class="tiny">'+(x.auto?"This charge was added automatically. Change its amount or mark it confirmed.":"Do not record a paycheck that is already included in your starting bank balance.")+'</p><button class="save" type="submit">Save transaction</button></form>';
  }else if(t==="bill"){
   name=x.id?"Edit bill":"New bill";body='<form id="editor"><input type="hidden" name="id" value="'+esc(x.id||"")+'">'+field("name","Bill name",x.name||"","text",'required maxlength="70"')+
   field("amount","Amount ($)",x.amount===undefined?"":x.amount,"number",'step="0.01" required min="0.01" inputmode="decimal"')+
   frequencies(x.frequency||"monthly")+field("nextDue","Next due date",x.nextDue||now(),"date","required")+
-  field("paidThrough","Paid through (optional)",x.paidThrough||"","date")+'<button class="save" type="submit">Save bill</button></form>'+
-  (x.id?'<button class="delete" data-act="deletebill" data-id="'+esc(x.id)+'">Delete bill</button>':"");
+  '<div class="form-row"><label>Automatically add bill to Money Log?</label><select name="autoLog"><option value="yes" '+(x.autoLog!==false?"selected":"")+'>Yes — on its due date</option><option value="no" '+(x.autoLog===false?"selected":"")+'>No — I will mark it paid</option></select></div>'+
+  field("paidThrough","Paid through (optional)",x.paidThrough||"","date")+
+  '<p class="tiny">Auto-logged bills reduce the estimated balance, but are not verified with your bank. Editing this amount changes future payments, not old charges.</p><button class="save" type="submit">Save bill</button></form>'+
+  (x.id?'<button class="delete" data-act="deletebill" data-id="'+esc(x.id)+'">Stop this bill (keeps past log)</button>':"");
  }else if(t==="income"){
   name=x.id?"Edit income":"New income";body='<form id="editor"><input type="hidden" name="id" value="'+esc(x.id||"")+'">'+
   field("name","Income source",x.name||"","text",'required maxlength="70"')+
@@ -244,6 +286,14 @@ function sheet(){
   field("amount","Expected take-home amount ($)",x.amount===null||x.amount===undefined?"":x.amount,"number",'step="0.01" min="0" inputmode="decimal"')+
   '<div class="form-row"><label>Already received?</label><select name="received"><option value="no" '+(!x.received?"selected":"")+'>No</option><option value="yes" '+(x.received?"selected":"")+'>Yes</option></select></div>'+
   '<button class="save" type="submit">Save payday</button></form>'+(x.id?'<button class="delete" data-act="deleteschool" data-id="'+esc(x.id)+'">Delete payday</button>':"");
+ }else if(t==="removebill"){
+  name="Remove this bill charge";
+  body='<p class="muted"><b>'+esc(x.name)+'</b> · '+cash(x.amount)+' · '+when(x.scheduledDate||x.date)+'</p>'+
+  '<p class="muted">Choose what happened. Either choice removes this single charge from your Money Log and restores it to the estimated balance. It will not be auto-added again.</p>'+
+  '<button class="save" data-act="billunpaid" data-id="'+esc(x.id)+'">Not paid yet — still owed</button>'+
+  '<p class="tiny">The amount stays reserved in your spending forecast until you mark it paid.</p>'+
+  '<button class="add secondary" data-act="billskipped" data-id="'+esc(x.id)+'">Was not charged — skip this time</button>'+
+  '<p class="tiny">The charge is not reserved. Future monthly or yearly bills continue unless you delete the recurring bill in Bills.</p>';
  }else if(t==="past"){
   name="Previous paydays";
   body='<div class="row-list">'+S.schoolChecks.filter(function(x){return x.received||x.expectedDate<now()}).sort(function(a,b){return b.expectedDate.localeCompare(a.expectedDate)}).map(function(x){return '<div class="split"><div><b>'+when(x.expectedDate)+'</b><small style="display:block">'+(x.received?"Received":"Past expected date")+'</small></div><button class="link-btn" data-act="editschool" data-id="'+esc(x.id)+'">Edit</button></div>'}).join("")+'</div>';
@@ -260,7 +310,7 @@ function render(){
   '<p class="install-note">On iPhone: first open the site in Safari and use Share → Add to Home Screen. Open that icon and import your file there.</p></div>';
   MODAL.innerHTML="";return
  }
- normalize();NAV.hidden=false;
+ normalize();var autoAdded=autoPostDueBills();NAV.hidden=false;
  MAIN.innerHTML=view==="home"?home():view==="bills"?bills():view==="income"?incomes():view==="log"?history():settings();
  NAV.innerHTML=[["home","⌂","Home"],["bills","▤","Bills"],["income","↙","Income"],["log","☰","Log"],["more","⚙","More"]].map(function(x){return '<button class="'+(view===x[0]?"active":"")+'" data-act="tab" data-to="'+x[0]+'"><span>'+x[1]+'</span>'+x[2]+'</button>'}).join("");
  MODAL.innerHTML=sheet();
@@ -287,16 +337,28 @@ document.addEventListener("click",function(e){
  if(a==="tab"){view=b.dataset.to;modal=null;render();window.scrollTo(0,0);return}
  if(a==="close"){modal=null;render();return}
  if(a==="newtx"){modal={type:"tx",data:{kind:b.dataset.kind||"expense",date:now()}};render();return}
- if(a==="paybill"){var bill=S.bills.find(function(x){return x.id===key});if(bill){modal={type:"tx",data:{kind:"bill",name:bill.name,amount:bill.amount,date:now(),linkId:bill.id,scheduledDate:b.dataset.due||bill.nextDue}};render()}return}
+ if(a==="edittx"){var toEdit=S.transactions.find(function(x){return x.id===key});if(toEdit){modal={type:"tx",data:Object.assign({},toEdit)};render()}return}
+ if(a==="billunpaid"||a==="billskipped"){
+  var charge=S.transactions.find(function(x){return x.id===key});
+  if(!charge||charge.kind!=="bill"||!charge.linkId||!charge.scheduledDate)return;
+  setBillException(charge.linkId,charge.scheduledDate,a==="billunpaid"?"unpaid":"skipped");
+  S.transactions=S.transactions.filter(function(x){return x.id!==key});
+  modal=null;if(save()){render();ping(a==="billunpaid"?"Marked unpaid — amount still reserved":"Skipped this charge")}return
+ }
+ if(a==="paybill"){var bill=S.bills.find(function(x){return x.id===key});if(bill){var paid=S.transactions.find(function(x){return x.kind==="bill"&&x.linkId===bill.id&&x.scheduledDate===(b.dataset.due||bill.nextDue)});modal={type:"tx",data:paid?Object.assign({},paid):{kind:"bill",name:bill.name,amount:bill.amount,date:now(),linkId:bill.id,scheduledDate:b.dataset.due||bill.nextDue}};render()}return}
  if(a==="receivecheck"){var chk=S.schoolChecks.find(function(x){return x.id===key});if(chk){modal={type:"tx",data:{kind:"income",name:"School paycheck",amount:chk.amount||"",date:now(),linkId:chk.id,scheduledDate:chk.expectedDate}};render()}return}
  if(a==="editbill"||a==="editincome"||a==="editschool"){
   var arr=a==="editbill"?S.bills:a==="editincome"?S.recurringIncome:S.schoolChecks;
   modal={type:a==="editbill"?"bill":a==="editincome"?"income":"school",data:Object.assign({},arr.find(function(x){return x.id===key})||{})};render();return
  }
  if(a==="showpast"){modal={type:"past",data:{}};render();return}
+ if(a==="deltx"){
+  var tx=S.transactions.find(function(x){return x.id===key});
+  if(tx&&tx.kind==="bill"&&tx.linkId&&tx.scheduledDate){modal={type:"removebill",data:Object.assign({},tx)};render();return}
+ }
  if(a==="deletebill"||a==="deleteincome"||a==="deleteschool"||a==="deltx"){
-  if(!confirm("Delete this item?"))return;
-  if(a==="deletebill")S.bills=S.bills.filter(function(x){return x.id!==key});
+  if(!confirm(a==="deletebill"?"Stop this bill permanently? Existing Money Log entries stay.": "Remove this item?"))return;
+  if(a==="deletebill"){S.bills=S.bills.filter(function(x){return x.id!==key});S.billExceptions=S.billExceptions.filter(function(x){return x.billId!==key})}
   if(a==="deleteincome")S.recurringIncome=S.recurringIncome.filter(function(x){return x.id!==key});
   if(a==="deleteschool")S.schoolChecks=S.schoolChecks.filter(function(x){return x.id!==key});
   if(a==="deltx")S.transactions=S.transactions.filter(function(x){return x.id!==key});
@@ -316,11 +378,15 @@ document.addEventListener("submit",function(e){
   S.openingBalance=num(v.openingBalance);S.openingDate=v.openingDate;S.savingsTarget=Math.max(0,num(v.savingsTarget));S.horizonDays=Number(v.horizonDays)||45
  }else if(modal&&modal.type==="tx"){
   if(!(num(v.amount)>0)||v.date>now()||!v.name.trim())return alert("Enter a name, positive amount, and a date that isn't in the future.");
-  S.transactions.push({id:id(),kind:v.kind,date:v.date,amount:num(v.amount),name:v.name.trim(),linkId:v.linkId||"",scheduledDate:v.scheduledDate||""});
+  var oldTx=v.txId?S.transactions.find(function(x){return x.id===v.txId}):null;
+  var tNew=Object.assign({},oldTx||{},{id:oldTx?oldTx.id:id(),kind:v.kind,date:v.date,amount:num(v.amount),name:v.name.trim(),linkId:v.linkId||"",scheduledDate:v.scheduledDate||""});
+  tNew.auto=!!(oldTx&&oldTx.auto&&v.assumed!=="no");
+  if(oldTx)S.transactions=S.transactions.map(function(x){return x.id===oldTx.id?tNew:x});else S.transactions.push(tNew);
+  if(v.kind==="bill"&&v.linkId&&v.scheduledDate)setBillException(v.linkId,v.scheduledDate,null);
   if(v.kind==="income"&&v.linkId){var ck=S.schoolChecks.find(function(x){return x.id===v.linkId});if(ck)ck.received=true}
  }else if(modal&&modal.type==="bill"){
   if(!v.name.trim()||!(num(v.amount)>0))return alert("Enter the bill name and amount.");
-  var billNew={id:v.id||id(),name:v.name.trim(),amount:num(v.amount),frequency:v.frequency,nextDue:v.nextDue,paidThrough:v.paidThrough||""};
+  var billNew={id:v.id||id(),name:v.name.trim(),amount:num(v.amount),frequency:v.frequency,nextDue:v.nextDue,paidThrough:v.paidThrough||"",autoLog:v.autoLog!=="no"};
   S.bills=v.id?S.bills.map(function(x){return x.id===v.id?billNew:x}):S.bills.concat(billNew)
  }else if(modal&&modal.type==="income"){
   if(!v.name.trim()||!(num(v.amount)>0))return alert("Enter income name and amount.");
@@ -334,6 +400,10 @@ document.addEventListener("submit",function(e){
 });
 try{var fromStore=localStorage.getItem(STORE);S=fromStore?JSON.parse(fromStore):null;if(S)normalize()}catch(e){S=null}
 render();
+function updateDueBillsOnWake(){if(!S||document.hidden)return;normalize();var added=autoPostDueBills();if(added){render();ping(added+" scheduled bill"+(added===1?"":"s")+" added to Money Log")}}
+document.addEventListener("visibilitychange",updateDueBillsOnWake);
+window.addEventListener("focus",updateDueBillsOnWake);
+setInterval(updateDueBillsOnWake,60000);
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js").catch(function(){})})}
 })();
 </script>
