@@ -36,12 +36,28 @@ label{font-size:12px;color:#597078;font-weight:740;display:block;margin:10px 0 6
 .row-list>div{padding:12px 0;border-bottom:1px solid #edf2f0}.row-list>div:last-child{border-bottom:0}.entry{display:flex;gap:10px;align-items:center}.entry .symbol{width:33px;height:33px;display:grid;place-items:center;border-radius:10px;background:#e4f5e9;color:#108652;font-size:20px;flex-shrink:0}.entry .symbol.minus{background:#ffe9ea;color:#b6535f}.entry .name{flex:1;min-width:0}.entry .name b{display:block;font-size:13px;overflow-wrap:anywhere}.entry .name small{font-size:11px;color:#9aaaa9}.entry .value{font-weight:800;font-size:13px}.negative{color:#c5505c!important}.positive{color:#0d9267!important}.del{color:#b64a54;background:none;border:0;font-size:22px}
 .small-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.small-grid>div{border:1px solid #e6eceb;border-radius:11px;padding:12px;min-width:0}.small-grid small{display:block;color:#889d9c;font-size:10px}.small-grid strong{font-size:19px;display:block;margin:6px 0 2px}.small-grid em{font-size:10px;color:#75918c;font-style:normal;display:block;overflow-wrap:anywhere}
 nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e1eae8;display:flex;height:67px;padding-bottom:env(safe-area-inset-bottom);box-sizing:content-box;z-index:11;box-shadow:0 -8px 22px #16453b10}
-nav button{border:0;background:none;flex:1;min-width:0;color:#93a6a8;font-size:10px;font-weight:750;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}nav button span{font-size:23px;font-weight:400}nav button.active{color:#067c71}
+nav button{border:0;background:none;flex:1;min-width:0;color:#93a6a8;font-size:10px;font-weight:750;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}nav button span{font-size:21px;font-weight:400}nav button.active{color:#067c71}
+@media(max-width:420px){nav button{font-size:9px;letter-spacing:-.1px}nav button span{font-size:21px}}
 .overlay{position:fixed;inset:0;background:#0b272aca;z-index:19}.sheet{position:fixed;bottom:0;left:0;right:0;margin:auto;z-index:20;max-width:600px;max-height:90dvh;overflow-y:auto;background:white;border-radius:22px 22px 0 0;padding:18px 19px max(24px,env(safe-area-inset-bottom));box-shadow:0 -15px 60px #0002}
 .sheet-head{display:flex;align-items:center;justify-content:space-between}.sheet-head h2{font-size:20px;margin:0}.sheet-head button{border:0;background:#eef4f2;border-radius:10px;width:35px;height:35px;font-size:20px;color:#537571}
 .form-row{margin:13px 0}.form-row label{font-size:12px;margin-bottom:7px}.save{width:100%;border:0;border-radius:12px;background:#0a7971;color:white;min-height:52px;margin-top:12px;font-weight:800}.delete{border:0;background:transparent;color:#ba4f59;width:100%;padding:13px;margin-top:5px;font-weight:780;font-size:12px}
 .muted{color:#889b9e;font-size:12px;line-height:1.6}.empty{border:1px dashed #c9dcd8;border-radius:13px;text-align:center;padding:19px;color:#809998;font-size:13px}
 .notice{position:fixed;bottom:87px;left:50%;transform:translateX(-50%);background:#183c41;color:#fff;border-radius:13px;padding:12px 16px;z-index:30;box-shadow:0 8px 22px #0003;font-size:13px;max-width:90vw}
+.future-hero{background:#eaf7f3;border:1px solid #cfe9e0;border-radius:19px;margin:15px 0;padding:20px}
+.future-hero .eyebrow{font-size:11px;line-height:1.5;letter-spacing:.6px}
+.future-hero-value{font-size:clamp(34px,10vw,47px);line-height:1.12;font-weight:860;letter-spacing:-1.5px;color:#176c63;margin:9px 0}
+.future-hero-trend{font-size:13px;font-weight:800;color:#4d8580}
+.future-months{display:grid;gap:11px;margin:16px 0}
+.future-month{border-radius:16px;background:#fff;border:1px solid #e2eeec;padding:17px;box-shadow:0 4px 14px #15413c08}
+.future-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.future-date{font-size:16px;font-weight:820;white-space:nowrap;color:#213f45}
+.future-caption{font-size:11px;color:#8b9ca0;margin-top:4px}
+.future-balance{font-size:clamp(19px,5vw,25px);letter-spacing:-.7px;font-weight:860;text-align:right;overflow-wrap:anywhere}
+.future-trend{display:inline-block;border-radius:9px;background:#eef5f3;padding:7px 9px;color:#6a8684;font-weight:800;font-size:12px;margin-top:13px}
+.future-trend.positive{background:#e3f8eb}
+.future-trend.negative{background:#ffeded}
+.future-warning{font-size:11px;color:#9b681a;background:#fff4dc;border-radius:8px;line-height:1.5;margin-top:10px;padding:9px}
+@media(max-width:345px){.future-row{align-items:flex-start;flex-direction:column}.future-balance{text-align:left}}
 .file-button{display:block;width:100%;margin-top:10px;min-height:50px;text-align:center;border:1px solid #a9d6cc;border-radius:12px;background:#ecf8f3;color:#137d6b;font-size:13px;font-weight:820;padding:15px}.file-button input{display:none}
 .install-note{background:#eaf2f1;border-radius:10px;padding:12px;color:#607f7a;font-size:12px;line-height:1.6}
 .setup{min-height:75vh;display:flex;flex-direction:column;justify-content:center}.setup h1{font-size:35px;letter-spacing:-1.4px}.setup p{font-size:14px;color:#6d8582;line-height:1.6}
@@ -180,6 +196,27 @@ function forecast(){
  missing:r.missing.filter(function(x){return x.expectedDate<=advance(t,S.horizonDays)}),
  nextBill:r.list.find(function(x){return x.kind==="bill"}),nextIncome:r.list.find(function(x){return x.kind==="income"})}
 }
+function futureProjection(){
+ // Always show the next five calendar months, each measured after the 2nd.
+ var t=now(),start=dateObj(t),targets=[],i;
+ for(i=1;i<=5;i++)targets.push(localKey(new Date(start.getFullYear(),start.getMonth()+i,2,12)));
+ var until=targets[targets.length-1],schedule=getEvents(until),byDay={},end=currentBalance(),points=[];
+ schedule.list.forEach(function(x){(byDay[x.date]||(byDay[x.date]=[])).push(x)});
+ var targetIndex=0;
+ for(var day=t;day<=until;day=advance(day,1)){
+  var entries=byDay[day]||[],bills=0,income=0;
+  entries.forEach(function(e){if(e.kind==="bill")bills+=e.amount;else income+=e.amount});
+  // Bills are assumed to leave the account before deposits on the same day.
+  end=num(end-bills+income);
+  if(day===targets[targetIndex]){
+   var missing=schedule.missing.filter(function(x){return x.expectedDate<=day}).length;
+   points.push({date:day,balance:end,missing:missing,change:points.length?num(end-points[points.length-1].balance):null});
+   targetIndex++;
+  }
+ }
+ var lastSchoolDate=S.schoolChecks.map(function(x){return x.expectedDate||""}).sort().pop()||"";
+ return {points:points,lastSchoolDate:lastSchoolDate,missingTotal:schedule.missing.length};
+}
 function title(h,s){return '<div class="heading"><span class="eyebrow">'+s+'</span><h1>'+h+'</h1></div>'}
 function eventItem(e){return '<div class="entry"><div class="symbol '+(e.kind==="bill"?"minus":"")+'">'+(e.kind==="bill"?"↗":"↙")+'</div><div class="name"><b>'+esc(e.name)+'</b><small>'+when(e.date)+(e.overdue?" · overdue":"")+'</small></div><div class="value '+(e.kind==="bill"?"negative":"positive")+'">'+(e.kind==="bill"?"−":"+")+cash(e.amount)+'</div></div>'}
 function home(){
@@ -202,6 +239,35 @@ function home(){
  '<div><small>Next income</small><strong>'+(f.nextIncome?cash(f.nextIncome.amount):"—")+'</strong><em>'+(f.nextIncome?esc(f.nextIncome.name)+" · "+when(f.nextIncome.date):"No amount scheduled")+'</em></div></div>'+
  '<div class="row-list">'+(top.map(function(x){return '<div>'+eventItem(x)+'</div>'}).join("")||'<p class="muted">Nothing scheduled.</p>')+'</div></section>'+
  '<p class="tiny">Bills are added as assumed charges on their due date the next time you open the app. Check USAA and correct charges in Log. No bank connection or background posting while closed.</p>'
+}
+function future(){
+ var result=futureProjection(),points=result.points,first=points[0],last=points[points.length-1];
+ if(!first||!last)return title("Future","FIVE-MONTH OUTLOOK")+'<div class="empty">No forecast available yet.</div>';
+ var totalChange=num(last.balance-first.balance);
+ var summaryClass=totalChange>0.005?"positive":totalChange < -0.005?"negative":"";
+ var overall=totalChange>0.005?"↗ Increasing":totalChange < -0.005?"↘ Decreasing":"→ Holding steady";
+ var rows=points.map(function(p,i){
+   var change=p.change,trend=change===null?"First forecast":change>0.005?"↗ Up "+cash(change):change < -0.005?"↘ Down "+cash(Math.abs(change)):"→ No change";
+   var color=change===null?"":change>0.005?"positive":change < -0.005?"negative":"";
+   var prior=i===0?"":' since '+new Date(dateObj(points[i-1].date)).toLocaleDateString("en-US",{month:"long"});
+   var year=dateObj(p.date).getFullYear();
+   var month=dateObj(p.date).toLocaleDateString("en-US",{month:"long"});
+   return '<section class="future-month"><div class="future-row"><div><div class="future-date">'+esc(month)+' 2, '+year+'</div><div class="future-caption">Expected balance after bills</div></div>'+
+   '<div class="future-balance '+(p.balance<0?"negative":"")+'">'+cash(p.balance)+'</div></div>'+
+   '<div class="future-trend '+color+'">'+esc(trend)+esc(prior)+'</div>'+
+   (p.missing?'<div class="future-warning">'+p.missing+' school paycheck'+(p.missing===1?" is":"s are")+' missing an amount before this date.</div>':"")+
+   '</section>';
+ }).join("");
+ var unknownLast=result.lastSchoolDate&&result.lastSchoolDate<last.date;
+ return title("Your future money","NEXT FIVE MONTHS")+
+ '<p class="muted">Each number is your expected balance at the end of the <b>2nd</b>, after bills and income scheduled through that date.</p>'+
+ '<section class="future-hero"><div class="eyebrow">CHANGE FROM '+esc(when(first.date))+' TO '+esc(when(last.date))+'</div>'+
+ '<div class="future-hero-value '+summaryClass+'">'+(totalChange>0?"+":totalChange<0?"−":"")+cash(Math.abs(totalChange))+'</div>'+
+ '<div class="future-hero-trend '+summaryClass+'">'+overall+'</div></section>'+
+ '<div class="future-months">'+rows+'</div>'+
+ (points.some(function(p){return p.missing>0})?'<div class="warn">Some school paychecks have no estimated amounts and are counted as $0. These projections may be lower than reality. Add expected amounts in Income to improve accuracy.</div>':"")+
+ (unknownLast?'<div class="warn">Your school pay schedule currently ends '+when(result.lastSchoolDate)+'. Paychecks after that date are not included until you add the new schedule.</div>':"")+
+ '<p class="tiny">These are projections, not guaranteed bank balances. They use your current estimated balance, all listed repeating bills, other income, individual school pay dates, and recorded bill corrections. Everyday spending you have not logged is not included. Changes to your budget will update this forecast automatically.</p>';
 }
 function bills(){
  var f=forecast(),sorted=S.bills.slice().sort(function(a,b){return String(a.nextDue||"").localeCompare(String(b.nextDue||""))});
@@ -311,8 +377,8 @@ function render(){
   MODAL.innerHTML="";return
  }
  normalize();var autoAdded=autoPostDueBills();NAV.hidden=false;
- MAIN.innerHTML=view==="home"?home():view==="bills"?bills():view==="income"?incomes():view==="log"?history():settings();
- NAV.innerHTML=[["home","⌂","Home"],["bills","▤","Bills"],["income","↙","Income"],["log","☰","Log"],["more","⚙","More"]].map(function(x){return '<button class="'+(view===x[0]?"active":"")+'" data-act="tab" data-to="'+x[0]+'"><span>'+x[1]+'</span>'+x[2]+'</button>'}).join("");
+ MAIN.innerHTML=view==="home"?home():view==="bills"?bills():view==="income"?incomes():view==="log"?history():view==="future"?future():settings();
+ NAV.innerHTML=[["home","⌂","Home"],["bills","▤","Bills"],["income","↙","Income"],["log","☰","Log"],["future","↗","Future"],["more","⚙","More"]].map(function(x){return '<button class="'+(view===x[0]?"active":"")+'" data-act="tab" data-to="'+x[0]+'"><span>'+x[1]+'</span>'+x[2]+'</button>'}).join("");
  MODAL.innerHTML=sheet();
 }
 async function doImport(file){
