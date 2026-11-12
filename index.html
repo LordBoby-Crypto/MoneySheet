@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#153c43">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Pocket Money">
+<meta name="description" content="A simple, offline-ready personal budget and cash-flow planner.">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
+<title>Pocket Money</title>
+<style>
+:root{font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#183a40;background:#f5f8f7}
+*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #70c5b9;outline-offset:2px}
+header{height:60px;background:#fff;border-bottom:1px solid #e2e9e7;position:sticky;top:0;z-index:9;padding:10px 17px;display:flex;align-items:center;gap:9px}
+header .mark{background:#0c7470;color:white;border-radius:11px;width:32px;height:32px;display:grid;place-items:center;font-size:21px;font-weight:900}header strong{font-size:18px;letter-spacing:-.6px}header strong span{color:#0b837a}
+header small{margin-left:auto;color:#91a1a5;font-size:11px}
+main{max-width:750px;margin:0 auto;padding:24px 17px 118px}
+.eyebrow{font-size:10px;letter-spacing:1.5px;font-weight:900;color:#0e817b;text-transform:uppercase}.heading{margin:0 2px 18px}.heading h1{font-size:31px;line-height:1.15;letter-spacing:-1.1px;margin:7px 0 6px}.heading p{color:#71878b;margin:0;font-size:13px;line-height:1.55}
+.bal{border-radius:21px;background:#153b43;color:#fff;padding:23px 20px 20px;box-shadow:0 10px 26px #143f4219}
+.bal .mini-label{font-size:13px;color:#c0dadd}.bal .big{font-size:clamp(39px,11vw,57px);font-weight:850;letter-spacing:-2px;margin:5px 0;overflow-wrap:anywhere}.bal .desc{font-size:11px;color:#a6c7c9}
+.safe{background:#eaf8f3;border:1px solid #cbe8db;border-radius:19px;padding:19px 20px;margin-top:14px}.safe .mini-label{font-size:12px;letter-spacing:.7px;font-weight:850;color:#176d60}.safe .big{font-size:clamp(38px,10vw,49px);letter-spacing:-1.8px;font-weight:850;color:#056d5d;margin:7px 0}.safe p{font-size:12px;color:#41776e;line-height:1.6;margin:0}
+.warn{border-radius:11px;padding:12px;background:#fff2d7;color:#885c15;font-size:12px;margin-top:11px;line-height:1.55}.warning-red{background:#ffebea;color:#a13e45}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:15px 0}.quick button{background:#fff;border:1px solid #e1e9e7;border-radius:14px;min-height:61px;color:#2c4b4c;font-size:13px;font-weight:800;box-shadow:0 5px 13px #0f30300c}.quick button i{display:inline-grid;place-items:center;margin-right:7px;border-radius:50%;width:30px;height:30px;background:#e3f4ea;color:#087653;font-style:normal;font-size:21px}.quick button.out i{color:#bb5760;background:#fbe8ec}
+.card,.item{background:#fff;border:1px solid #e1eae8;border-radius:18px;box-shadow:0 4px 16px #113f4308}.card{padding:18px;margin:14px 0}.item{padding:16px;margin:9px 0}.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 14px}.section-title h2{font-size:18px;margin:0;letter-spacing:-.4px}.link-btn{background:transparent;color:#0b827b;border:0;font-weight:800;font-size:13px;padding:4px}
+label{font-size:12px;color:#597078;font-weight:740;display:block;margin:10px 0 6px}input,select{border:1px solid #d4e2e0;border-radius:11px;background:#fbfdfd;min-height:48px;width:100%;padding:10px 12px;color:#213e43;font-size:16px}
+.money-input{display:flex;align-items:center;background:#f7fbfa;border:1px solid #d1e1df;border-radius:12px;padding:0 12px;margin:9px 0}.money-input span{font-size:22px;color:#7a9f9c}.money-input input{background:transparent;border:0;outline:0;font-size:25px;font-weight:800}
+.split{display:flex;justify-content:space-between;gap:15px;align-items:center;padding:12px 0;border-bottom:1px solid #edf2f1;font-size:13px;color:#6d8588}.split:last-child{border:0}.split b{text-align:right;color:#233d41;font-size:15px}.split b.strong{font-size:23px;color:#067767}
+.status{padding:10px;border-radius:9px;background:#e9f8f0;color:#0e7958;font-weight:750;font-size:12px;margin:12px 0}.status.bad{color:#ab454e;background:#ffeded}
+.tiny{font-size:11px;color:#899da0;line-height:1.6;margin:12px 0 0}.row{display:flex;gap:10px;align-items:center}.row .left{flex:1;min-width:0}.row .left strong{font-size:15px;display:block;overflow-wrap:anywhere}.row .left small{font-size:11px;color:#8b9b9e;display:block;margin-top:4px}.row .amount{font-size:17px;font-weight:850;white-space:nowrap}
+.actions{display:flex;gap:8px;margin-top:13px}.actions button{flex:1;border:0;border-radius:9px;background:#edf4f2;color:#216c68;font-size:12px;font-weight:800;padding:10px}.actions button.pay{background:#e0f4e9;color:#04744e}
+.add{width:100%;border:0;border-radius:12px;background:#0b7770;color:#fff;font-weight:800;min-height:49px;margin:6px 0 14px}.add.secondary{background:#e7f2ef;color:#216b64}
+.row-list>div{padding:12px 0;border-bottom:1px solid #edf2f0}.row-list>div:last-child{border-bottom:0}.entry{display:flex;gap:10px;align-items:center}.entry .symbol{width:33px;height:33px;display:grid;place-items:center;border-radius:10px;background:#e4f5e9;color:#108652;font-size:20px;flex-shrink:0}.entry .symbol.minus{background:#ffe9ea;color:#b6535f}.entry .name{flex:1;min-width:0}.entry .name b{display:block;font-size:13px;overflow-wrap:anywhere}.entry .name small{font-size:11px;color:#9aaaa9}.entry .value{font-weight:800;font-size:13px}.negative{color:#c5505c!important}.positive{color:#0d9267!important}.del{color:#b64a54;background:none;border:0;font-size:22px}
+.small-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.small-grid>div{border:1px solid #e6eceb;border-radius:11px;padding:12px;min-width:0}.small-grid small{display:block;color:#889d9c;font-size:10px}.small-grid strong{font-size:19px;display:block;margin:6px 0 2px}.small-grid em{font-size:10px;color:#75918c;font-style:normal;display:block;overflow-wrap:anywhere}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e1eae8;display:flex;height:67px;padding-bottom:env(safe-area-inset-bottom);box-sizing:content-box;z-index:11;box-shadow:0 -8px 22px #16453b10}
+nav button{border:0;background:none;flex:1;min-width:0;color:#93a6a8;font-size:10px;font-weight:750;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}nav button span{font-size:23px;font-weight:400}nav button.active{color:#067c71}
+.overlay{position:fixed;inset:0;background:#0b272aca;z-index:19}.sheet{position:fixed;bottom:0;left:0;right:0;margin:auto;z-index:20;max-width:600px;max-height:90dvh;overflow-y:auto;background:white;border-radius:22px 22px 0 0;padding:18px 19px max(24px,env(safe-area-inset-bottom));box-shadow:0 -15px 60px #0002}
+.sheet-head{display:flex;align-items:center;justify-content:space-between}.sheet-head h2{font-size:20px;margin:0}.sheet-head button{border:0;background:#eef4f2;border-radius:10px;width:35px;height:35px;font-size:20px;color:#537571}
+.form-row{margin:13px 0}.form-row label{font-size:12px;margin-bottom:7px}.save{width:100%;border:0;border-radius:12px;background:#0a7971;color:white;min-height:52px;margin-top:12px;font-weight:800}.delete{border:0;background:transparent;color:#ba4f59;width:100%;padding:13px;margin-top:5px;font-weight:780;font-size:12px}
+.muted{color:#889b9e;font-size:12px;line-height:1.6}.empty{border:1px dashed #c9dcd8;border-radius:13px;text-align:center;padding:19px;color:#809998;font-size:13px}
+.notice{position:fixed;bottom:87px;left:50%;transform:translateX(-50%);background:#183c41;color:#fff;border-radius:13px;padding:12px 16px;z-index:30;box-shadow:0 8px 22px #0003;font-size:13px;max-width:90vw}
+.file-button{display:block;width:100%;margin-top:10px;min-height:50px;text-align:center;border:1px solid #a9d6cc;border-radius:12px;background:#ecf8f3;color:#137d6b;font-size:13px;font-weight:820;padding:15px}.file-button input{display:none}
+.install-note{background:#eaf2f1;border-radius:10px;padding:12px;color:#607f7a;font-size:12px;line-height:1.6}
+.setup{min-height:75vh;display:flex;flex-direction:column;justify-content:center}.setup h1{font-size:35px;letter-spacing:-1.4px}.setup p{font-size:14px;color:#6d8582;line-height:1.6}
+@media(min-width:750px){nav{width:750px;left:50%;transform:translateX(-50%);border-radius:15px 15px 0 0}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header><span class="mark">$</span><strong>Pocket <span>Money</span></strong><small>Only on your device</small></header>
+<main id="app"></main>
+<nav id="nav" aria-label="Main navigation" hidden></nav>
+<div id="modal"></div>
+<div id="notice" class="notice" hidden></div>
+<script>
+(function(){
+"use strict";
+var STORE="pocket-money-budget-v1";
+var S=null, view="home", scenario="", modal=null, noticeTimeout=0;
+var MAIN=document.getElementById("app"),NAV=document.getElementById("nav"),MODAL=document.getElementById("modal");
+function esc(v){return String(v===null||v===undefined?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function cash(v){return new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(Number(v)||0)}
+function num(v){return Math.round((Number(v)||0)*100)/100}
+function pad(n){return String(n).padStart(2,"0")}
+function localKey(dt){return dt.getFullYear()+"-"+pad(dt.getMonth()+1)+"-"+pad(dt.getDate())}
+function dateObj(s){var v=String(s||"").slice(0,10);return /^\d{4}-\d{2}-\d{2}$/.test(v)?new Date(Number(v.slice(0,4)),Number(v.slice(5,7))-1,Number(v.slice(8)),12):new Date(NaN)}
+function now(){return localKey(new Date())}
+function advance(s,n){var d=dateObj(s);d.setDate(d.getDate()+n);return localKey(d)}
+function days(a,b){return Math.round((dateObj(b)-dateObj(a))/86400000)}
+function nextFirst(t){var d=dateObj(t);return localKey(new Date(d.getFullYear(),d.getMonth()+1,1,12))}
+function dim(y,m){return new Date(y,m+1,0).getDate()}
+function occurrence(first,freq,n){
+ var d=dateObj(first);if(isNaN(d.getTime()))return "";
+ if(freq==="once"||!freq)return n===0?localKey(d):"";
+ if(freq==="weekly"||freq==="biweekly")return advance(first,n*(freq==="weekly"?7:14));
+ var month=d.getMonth(),year=d.getFullYear();
+ if(freq==="yearly")year+=n;
+ else {var target=new Date(year,month+n,1,12);year=target.getFullYear();month=target.getMonth()}
+ return localKey(new Date(year,month,Math.min(d.getDate(),dim(year,month)),12))
+}
+function when(s){if(!s)return "Not set";var d=dateObj(s);if(isNaN(d.getTime()))return "Not set";return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:d.getFullYear()===new Date().getFullYear()?undefined:"numeric"})}
+function id(){return "x"+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function freqLabel(s){return {monthly:"Monthly",yearly:"Yearly",weekly:"Weekly",biweekly:"Every 2 weeks",once:"One time"}[s]||"One time"}
+function fresh(){return {version:1,openingDate:now(),openingBalance:0,savingsTarget:0,horizonDays:45,bills:[],recurringIncome:[],schoolChecks:[],transactions:[]}}
+function normalize(){
+ S.bills=Array.isArray(S.bills)?S.bills:[];S.recurringIncome=Array.isArray(S.recurringIncome)?S.recurringIncome:[];
+ S.schoolChecks=Array.isArray(S.schoolChecks)?S.schoolChecks:[];S.transactions=Array.isArray(S.transactions)?S.transactions:[];
+ S.openingDate=S.openingDate||now();S.openingBalance=num(S.openingBalance);S.savingsTarget=Math.max(0,num(S.savingsTarget));
+ S.horizonDays=Math.max(7,Math.min(180,Number(S.horizonDays)||45))
+}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(S));return true}catch(e){alert("Could not save changes. Your phone may be out of storage or private browsing is enabled.");return false}}
+function ping(message){var e=document.getElementById("notice");e.textContent=message;e.hidden=false;clearTimeout(noticeTimeout);noticeTimeout=setTimeout(function(){e.hidden=true},2900)}
+function currentBalance(){
+ var t=now();
+ return num(S.openingBalance+S.transactions.reduce(function(a,x){
+  return x.date>=S.openingDate&&x.date<=t?a+(x.kind==="income"?Number(x.amount)||0:-(Number(x.amount)||0)):a
+ },0))
+}
+function hasLogged(kind,itemId,due){return S.transactions.some(function(x){return x.kind===kind&&x.linkId===itemId&&x.scheduledDate===due&&x.date>=S.openingDate})}
+function getEvents(until){
+ var t=now(),list=[],late=[],missing=[];
+ S.bills.forEach(function(b){
+  if(!b.name||!(Number(b.amount)>0)||!b.nextDue)return;
+  var overdue=0;
+  for(var n=0;n<450;n++){
+   var due=occurrence(b.nextDue,b.frequency||"monthly",n);if(!due||due>until)break;
+   if(due<S.openingDate||b.paidThrough&&due<=b.paidThrough||hasLogged("bill",b.id,due))continue;
+   var o={kind:"bill",name:b.name,amount:Number(b.amount),date:due,scheduledDate:due,linkId:b.id};
+   if(due<t){overdue++;o.date=t;o.overdue=true;late.push(o)}else list.push(o);
+  }
+ });
+ list=list.concat(late);
+ S.recurringIncome.forEach(function(i){
+  if(!i.name||!(Number(i.amount)>0)||!i.nextDate)return;
+  for(var n=0;n<450;n++){
+   var due=occurrence(i.nextDate,i.frequency||"monthly",n);if(!due||due>until)break;
+   if(due<t||hasLogged("income",i.id,due))continue;
+   list.push({kind:"income",name:i.name,amount:Number(i.amount),date:due,scheduledDate:due,linkId:i.id});
+  }
+ });
+ S.schoolChecks.forEach(function(x){
+  if(x.received||!x.expectedDate||x.expectedDate<t||x.expectedDate>until||hasLogged("income",x.id,x.expectedDate))return;
+  if(!(Number(x.amount)>0)){missing.push(x);return}
+  list.push({kind:"income",name:"School paycheck",amount:Number(x.amount),date:x.expectedDate,scheduledDate:x.expectedDate,linkId:x.id,school:true})
+ });
+ list.sort(function(a,b){return a.date.localeCompare(b.date)||(a.kind==="bill"?-1:1)});
+ return {list:list,late:late,missing:missing}
+}
+function forecast(){
+ var t=now(),first=nextFirst(t),until=advance(t,Math.max(S.horizonDays,days(t,first),60)),r=getEvents(until),balance=currentBalance();
+ var byDay={};r.list.forEach(function(x){(byDay[x.date]||(byDay[x.date]=[])).push(x)});
+ var end=balance,low=balance,firstBalance=balance,firstBills=0,firstIncome=0;
+ for(var date=t;date<=until;date=advance(date,1)){
+  var z=byDay[date]||[],bills=0,income=0;
+  z.forEach(function(x){if(x.kind==="bill")bills+=x.amount;else income+=x.amount});
+  var before=num(end-bills);
+  if(days(t,date)<=S.horizonDays)low=Math.min(low,before);
+  end=num(before+income);
+  if(date===first){firstBalance=end;firstBills=bills;firstIncome=income}
+ }
+ var safe=Math.max(0,num(low-S.savingsTarget));
+ return {balance:balance,first:first,firstBalance:firstBalance,firstBills:firstBills,firstIncome:firstIncome,low:low,
+ safe:safe,shortfall:Math.max(0,num(S.savingsTarget-low)),events:r.list,late:r.late,
+ missing:r.missing.filter(function(x){return x.expectedDate<=advance(t,S.horizonDays)}),
+ nextBill:r.list.find(function(x){return x.kind==="bill"}),nextIncome:r.list.find(function(x){return x.kind==="income"})}
+}
+function title(h,s){return '<div class="heading"><span class="eyebrow">'+s+'</span><h1>'+h+'</h1></div>'}
+function eventItem(e){return '<div class="entry"><div class="symbol '+(e.kind==="bill"?"minus":"")+'">'+(e.kind==="bill"?"↗":"↙")+'</div><div class="name"><b>'+esc(e.name)+'</b><small>'+when(e.date)+(e.overdue?" · overdue":"")+'</small></div><div class="value '+(e.kind==="bill"?"negative":"positive")+'">'+(e.kind==="bill"?"−":"+")+cash(e.amount)+'</div></div>'}
+function home(){
+ var f=forecast(),val=Math.max(0,num(scenario)),fits=val<=f.safe,top=f.events.slice(0,5);
+ var missing=f.missing.length,late=f.late.length;
+ return '<div class="heading"><span class="eyebrow">YOUR MONEY, SIMPLIFIED</span><h1>Your money today</h1><p>Quick answers, no spreadsheets.</p></div>'+
+ '<section class="bal"><div class="mini-label">Estimated bank balance</div><div class="big">'+cash(f.balance)+'</div><div class="desc">Based on your opening balance + money you logged</div></section>'+
+ '<section class="safe"><div class="mini-label">SAFE TO SPEND · TOTAL</div><div class="big">'+cash(f.safe)+'</div><p>Extra spending for the next '+S.horizonDays+' days while keeping '+cash(S.savingsTarget)+' in savings. This is not a daily allowance.</p>'+
+ (f.shortfall?'<div class="warn warning-red">Shortfall: '+cash(f.shortfall)+' needed to keep your savings target covered.</div>':'')+
+ (missing?'<div class="warn">'+missing+' school paycheck amount(s) missing. They are counted as $0.</div>':'')+
+ (late?'<div class="warn">'+late+' past-due bill occurrence(s) are not marked paid. They are protected in this estimate.</div>':'')+'</section>'+
+ '<div class="quick"><button data-act="newtx" data-kind="expense" class="out"><i>−</i> Record spending</button><button data-act="newtx" data-kind="income"><i>+</i> Record income</button></div>'+
+ '<section class="card"><div class="section-title"><h2>What if I spend…?</h2></div><label for="scenario">Try an amount (nothing will be charged)</label><div class="money-input"><span>$</span><input id="scenario" type="number" min="0" inputmode="decimal" step="0.01" placeholder="0.00" value="'+esc(scenario)+'"></div>'+
+ '<div class="split"><span>Expected balance '+when(f.first)+'</span><b>'+cash(f.firstBalance)+'</b></div>'+
+ '<div class="split"><span>After that pretend purchase</span><b class="strong" id="result">'+cash(f.firstBalance-val)+'</b></div>'+
+ '<div class="status '+(fits?"":"bad")+'" id="fit">'+(!val?"Enter a purchase amount above.":fits?"Within your safe-to-spend budget.":"May leave too little for upcoming bills or savings.")+'</div>'+
+ '<p class="tiny">Balance at the end of the 1st, after payments scheduled that day. Bills due after the 1st (such as your mortgage) are not subtracted from that snapshot. Your safe-to-spend total does protect bills later in the planning window.</p></section>'+
+ '<section class="card"><div class="section-title"><h2>Coming up</h2><button class="link-btn" data-act="tab" data-to="bills">Bills ›</button></div>'+
+ '<div class="small-grid"><div><small>Next bill</small><strong>'+(f.nextBill?cash(f.nextBill.amount):"—")+'</strong><em>'+(f.nextBill?esc(f.nextBill.name)+" · "+when(f.nextBill.date):"Nothing scheduled")+'</em></div>'+
+ '<div><small>Next income</small><strong>'+(f.nextIncome?cash(f.nextIncome.amount):"—")+'</strong><em>'+(f.nextIncome?esc(f.nextIncome.name)+" · "+when(f.nextIncome.date):"No amount scheduled")+'</em></div></div>'+
+ '<div class="row-list">'+(top.map(function(x){return '<div>'+eventItem(x)+'</div>'}).join("")||'<p class="muted">Nothing scheduled.</p>')+'</div></section>'+
+ '<p class="tiny">Money isn’t connected to your bank. Log transactions as they happen to keep these numbers useful.</p>'
+}
+function bills(){
+ var f=forecast(),sorted=S.bills.slice().sort(function(a,b){return a.nextDue.localeCompare(b.nextDue)});
+ return title("Your bills","YOUR PAYMENTS")+'<button class="add" data-act="editbill">+ Add bill</button>'+
+ (sorted.map(function(b){
+  var e=f.events.find(function(x){return x.kind==="bill"&&x.linkId===b.id});
+  return '<section class="item"><div class="row"><div class="left"><strong>'+esc(b.name)+'</strong><small>'+freqLabel(b.frequency)+' · Due '+when(e?e.scheduledDate:b.nextDue)+'</small></div><div class="amount">'+cash(b.amount)+'</div></div>'+
+  '<div class="actions"><button data-act="editbill" data-id="'+esc(b.id)+'">Edit</button><button class="pay" data-act="paybill" data-id="'+esc(b.id)+'" data-due="'+esc(e?e.scheduledDate:b.nextDue)+'">Mark paid</button></div></section>'
+ }).join("")||'<div class="empty">Add your first bill.</div>')+
+ '<p class="tiny">Mark a paid bill here so it reduces your balance and does not get counted a second time.</p>';
+}
+function incomes(){
+ var checks=S.schoolChecks.slice().sort(function(a,b){return a.expectedDate.localeCompare(b.expectedDate)}),t=now();
+ return title("Income & paydays","MONEY COMING IN")+
+ '<section class="card"><div class="section-title"><h2>VA and other income</h2><button class="link-btn" data-act="editincome">+ Add</button></div>'+
+ (S.recurringIncome.map(function(x){return '<div class="split"><div><b>'+esc(x.name)+'</b><small style="display:block;color:#8ba09d">'+freqLabel(x.frequency)+' · '+when(x.nextDate)+'</small></div><div><b>'+cash(x.amount)+'</b><button class="link-btn" style="display:block;margin-left:auto" data-act="editincome" data-id="'+esc(x.id)+'">Edit</button></div></div>'}).join("")||'<div class="empty">No other income added.</div>')+
+ '<p class="tiny">GI Bill housing can be entered here as a one-time payment for each month if the amount varies.</p></section>'+
+ '<section class="card"><div class="section-title"><h2>School paychecks</h2><button class="link-btn" data-act="editschool">+ Date</button></div>'+
+ (checks.filter(function(x){return !x.received&&x.expectedDate>=t}).slice(0,30).map(function(x){return '<div class="row-list"><div class="row"><div class="left"><strong>'+when(x.expectedDate)+'</strong><small>District: '+when(x.officialDate)+'</small></div><div class="amount">'+(Number(x.amount)>0?cash(x.amount):'<span style="color:#ad7214">Amount needed</span>')+'</div></div><div class="actions"><button data-act="editschool" data-id="'+esc(x.id)+'">Edit</button><button class="pay" data-act="receivecheck" data-id="'+esc(x.id)+'">Received</button></div></div>'}).join("")||'<div class="empty">No future school checks entered.</div>')+
+ '</section><button class="add secondary" data-act="showpast">See past school checks</button>';
+}
+function history(){
+ var records=S.transactions.slice().sort(function(a,b){return b.date.localeCompare(a.date)||String(b.id).localeCompare(String(a.id))});
+ return title("Money log","ACTUAL TRANSACTIONS")+
+ '<div class="quick"><button class="out" data-act="newtx" data-kind="expense"><i>−</i> Spent money</button><button data-act="newtx" data-kind="income"><i>+</i> Received money</button></div>'+
+ '<section class="card"><div class="section-title"><h2>Recent activity</h2></div>'+
+ (records.slice(0,140).map(function(x){var plus=x.kind==="income";return '<div class="entry" style="padding:11px 0;border-bottom:1px solid #edf2f0"><div class="symbol '+(plus?"":"minus")+'">'+(plus?"↙":"↗")+'</div><div class="name"><b>'+esc(x.name)+'</b><small>'+when(x.date)+'</small></div><div class="value '+(plus?"positive":"negative")+'">'+(plus?"+":"−")+cash(x.amount)+'</div><button class="del" data-act="deltx" data-id="'+esc(x.id)+'" aria-label="Delete">×</button></div>'}).join("")||'<p class="muted">No spending logged yet. Your Nov 12 school paycheck is included in the starting balance.</p>')+'</section>';
+}
+function settings(){
+ return title("Your settings","MAKE IT YOURS")+
+ '<section class="card"><div class="section-title"><h2>Balance & savings</h2></div><form id="settingsForm">'+
+ field("openingBalance","Your starting bank balance ($)",S.openingBalance,"number",'step="0.01" required inputmode="decimal"')+
+ field("openingDate","Date this balance was checked",S.openingDate,"date","required")+
+ field("savingsTarget","Savings to protect ($)",S.savingsTarget,"number",'min="0" step="0.01" required inputmode="decimal"')+
+ '<div class="form-row"><label>Look ahead</label><select name="horizonDays">'+[14,30,45,60,90,120,180].map(function(n){return '<option value="'+n+'" '+(S.horizonDays===n?"selected":"")+'>'+n+' days</option>'}).join("")+'</select></div><button class="save">Save settings</button></form>'+
+ '<p class="tiny">When changing the starting balance to what USAA shows today, change its date to today too. Old transactions stay in history but are not added again.</p></section>'+
+ '<section class="card"><div class="section-title"><h2>Back up your money</h2></div><p class="muted">Your numbers stay on this device. Download a backup before switching phones or clearing Safari data.</p>'+
+ '<button class="add secondary" data-act="export">Download backup</button><label class="file-button">Import a saved budget <input id="importBackup" type="file" accept=".json,application/json"></label>'+
+ '<p class="tiny">The iPhone Home Screen app may have separate storage from Safari. Import the budget inside the installed Home Screen app.</p></section>'+
+ '<section class="card"><div class="section-title"><h2>Add to Home Screen</h2></div><p class="install-note">On iPhone, open this page in <b>Safari</b>, tap the <b>Share</b> button, then <b>Add to Home Screen</b>. Open your new icon and import your budget there.</p>'+
+ '<p class="muted">No USAA connection or automatic phone/computer sync. To use both devices, export your backup on one and import it on the other.</p></section>';
+}
+function field(name,label,value,type,extras){return '<div class="form-row"><label for="f_'+name+'">'+esc(label)+'</label><input id="f_'+name+'" name="'+name+'" type="'+(type||"text")+'" value="'+esc(value===null?"":value)+'" '+(extras||"")+'></div>'}
+function frequencies(v){return '<div class="form-row"><label>Repeats</label><select name="frequency">'+["monthly","yearly","weekly","biweekly","once"].map(function(x){return '<option value="'+x+'" '+(v===x?"selected":"")+'>'+freqLabel(x)+'</option>'}).join("")+'</select></div>'}
+function sheet(){
+ if(!modal)return "";
+ var t=modal.type,x=modal.data||{},body="",name="";
+ if(t==="tx"){
+  name=x.kind==="bill"?"Mark bill paid":x.kind==="income"?"Record money received":"Record spending";
+  body='<form id="editor">'+field("name","What / where",x.name||"","text",'required maxlength="80"')+
+   field("amount","Amount ($)",x.amount||"","number",'required step="0.01" min="0.01" inputmode="decimal"')+
+   field("date","Date money moved",x.date||now(),"date","required")+
+   '<input type="hidden" name="kind" value="'+esc(x.kind||"expense")+'"><input type="hidden" name="linkId" value="'+esc(x.linkId||"")+'">'+
+   '<input type="hidden" name="scheduledDate" value="'+esc(x.scheduledDate||"")+'">'+
+   '<p class="tiny">Do not record a paycheck that is already part of your starting bank balance.</p><button class="save">Save transaction</button></form>';
+ }else if(t==="bill"){
+  name=x.id?"Edit bill":"New bill";body='<form id="editor"><input type="hidden" name="id" value="'+esc(x.id||"")+'">'+field("name","Bill name",x.name||"","text",'required maxlength="70"')+
+  field("amount","Amount ($)",x.amount===undefined?"":x.amount,"number",'step="0.01" required min="0.01" inputmode="decimal"')+
+  frequencies(x.frequency||"monthly")+field("nextDue","Next due date",x.nextDue||now(),"date","required")+
+  field("paidThrough","Paid through (optional)",x.paidThrough||"","date")+'<button class="save">Save bill</button></form>'+
+  (x.id?'<button class="delete" data-act="deletebill" data-id="'+esc(x.id)+'">Delete bill</button>':"");
+ }else if(t==="income"){
+  name=x.id?"Edit income":"New income";body='<form id="editor"><input type="hidden" name="id" value="'+esc(x.id||"")+'">'+
+  field("name","Income source",x.name||"","text",'required maxlength="70"')+
+  field("amount","Expected amount ($)",x.amount===undefined?"":x.amount,"number",'required min="0.01" step="0.01" inputmode="decimal"')+
+  frequencies(x.frequency||"monthly")+field("nextDate","Next deposit date",x.nextDate||now(),"date","required")+
+  '<p class="tiny">For GI Bill housing that changes, select One time and add each expected payment separately.</p><button class="save">Save income</button></form>'+
+  (x.id?'<button class="delete" data-act="deleteincome" data-id="'+esc(x.id)+'">Delete income</button>':"");
+ }else if(t==="school"){
+  name=x.id?"Edit school payday":"New school payday";body='<form id="editor"><input type="hidden" name="id" value="'+esc(x.id||"")+'">'+
+  field("officialDate","District payday",x.officialDate||now(),"date","required")+
+  field("expectedDate","Expected USAA date",x.expectedDate||now(),"date","required")+
+  field("amount","Expected take-home amount ($)",x.amount===null||x.amount===undefined?"":x.amount,"number",'step="0.01" min="0" inputmode="decimal"')+
+  '<div class="form-row"><label>Already received?</label><select name="received"><option value="no" '+(!x.received?"selected":"")+'>No</option><option value="yes" '+(x.received?"selected":"")+'>Yes</option></select></div>'+
+  '<button class="save">Save payday</button></form>'+(x.id?'<button class="delete" data-act="deleteschool" data-id="'+esc(x.id)+'">Delete payday</button>':"");
+ }else if(t==="past"){
+  name="Previous paydays";
+  body='<div class="row-list">'+S.schoolChecks.filter(function(x){return x.received||x.expectedDate<now()}).sort(function(a,b){return b.expectedDate.localeCompare(a.expectedDate)}).map(function(x){return '<div class="split"><div><b>'+when(x.expectedDate)+'</b><small style="display:block">'+(x.received?"Received":"Past expected date")+'</small></div><button class="link-btn" data-act="editschool" data-id="'+esc(x.id)+'">Edit</button></div>'}).join("")+'</div>';
+ }
+ return '<div class="overlay" data-act="close"></div><div class="sheet" role="dialog" aria-modal="true"><div class="sheet-head"><h2>'+esc(name)+'</h2><button data-act="close" aria-label="Close">×</button></div>'+body+'</div>'
+}
+function render(){
+ if(!S){
+  NAV.hidden=true;
+  MAIN.innerHTML='<div class="setup"><span class="eyebrow">WELCOME TO POCKET MONEY</span><h1>A simpler way to see your money.</h1>'+
+  '<p>Import your existing personal budget file to bring in the bills and paydays from Excel. The budget stays on this device — it is not stored on GitHub.</p>'+
+  '<label class="file-button">Import my budget file <input id="importBackup" type="file" accept=".json,application/json"></label>'+
+  '<button class="add secondary" data-act="startblank">Or start with a blank budget</button>'+
+  '<p class="install-note">On iPhone: first open the site in Safari and use Share → Add to Home Screen. Open that icon and import your file there.</p></div>';
+  MODAL.innerHTML="";return
+ }
+ normalize();NAV.hidden=false;
+ MAIN.innerHTML=view==="home"?home():view==="bills"?bills():view==="income"?incomes():view==="log"?history():settings();
+ NAV.innerHTML=[["home","⌂","Home"],["bills","▤","Bills"],["income","↙","Income"],["log","☰","Log"],["more","⚙","More"]].map(function(x){return '<button class="'+(view===x[0]?"active":"")+'" data-act="tab" data-to="'+x[0]+'"><span>'+x[1]+'</span>'+x[2]+'</button>'}).join("");
+ MODAL.innerHTML=sheet();
+}
+async function doImport(file){
+ if(!file)return;
+ try{
+  var t=await file.text(),d=JSON.parse(t);
+  if(!d||!Array.isArray(d.bills)||!Array.isArray(d.recurringIncome)||!Array.isArray(d.schoolChecks)||!Array.isArray(d.transactions))throw Error("Invalid file");
+  if(S&&!confirm("Replace the budget on this device with the imported budget?"))return;
+  S=d;normalize();view="home";modal=null;if(save()){render();ping("Budget imported");}
+ }catch(e){alert("This is not a valid Pocket Money budget file. Please choose the private JSON import/backup file.")}
+}
+document.addEventListener("change",function(e){if(e.target&&e.target.id==="importBackup")doImport(e.target.files[0])});
+document.addEventListener("input",function(e){
+ if(e.target.id!=="scenario"||!S)return;
+ scenario=e.target.value;var f=forecast(),amt=Math.max(0,num(scenario)),q=document.getElementById("result"),m=document.getElementById("fit");
+ if(q)q.textContent=cash(f.firstBalance-amt);
+ if(m){m.className="status "+(amt<=f.safe?"":"bad");m.textContent=!amt?"Enter a purchase amount above.":amt<=f.safe?"Within your safe-to-spend budget.":"May leave too little for upcoming bills or savings."}
+});
+document.addEventListener("click",function(e){
+ var b=e.target.closest("[data-act]");if(!b)return;var a=b.dataset.act,key=b.dataset.id;
+ if(a==="startblank"){if(confirm("Start with an empty budget? You can import your Excel-based data later.")){S=fresh();save();render()}return}
+ if(a==="tab"){view=b.dataset.to;modal=null;render();window.scrollTo(0,0);return}
+ if(a==="close"){modal=null;render();return}
+ if(a==="newtx"){modal={type:"tx",data:{kind:b.dataset.kind||"expense",date:now()}};render();return}
+ if(a==="paybill"){var bill=S.bills.find(function(x){return x.id===key});if(bill){modal={type:"tx",data:{kind:"bill",name:bill.name,amount:bill.amount,date:now(),linkId:bill.id,scheduledDate:b.dataset.due||bill.nextDue}};render()}return}
+ if(a==="receivecheck"){var chk=S.schoolChecks.find(function(x){return x.id===key});if(chk){modal={type:"tx",data:{kind:"income",name:"School paycheck",amount:chk.amount||"",date:now(),linkId:chk.id,scheduledDate:chk.expectedDate}};render()}return}
+ if(a==="editbill"||a==="editincome"||a==="editschool"){
+  var arr=a==="editbill"?S.bills:a==="editincome"?S.recurringIncome:S.schoolChecks;
+  modal={type:a==="editbill"?"bill":a==="editincome"?"income":"school",data:Object.assign({},arr.find(function(x){return x.id===key})||{})};render();return
+ }
+ if(a==="showpast"){modal={type:"past",data:{}};render();return}
+ if(a==="deletebill"||a==="deleteincome"||a==="deleteschool"||a==="deltx"){
+  if(!confirm("Delete this item?"))return;
+  if(a==="deletebill")S.bills=S.bills.filter(function(x){return x.id!==key});
+  if(a==="deleteincome")S.recurringIncome=S.recurringIncome.filter(function(x){return x.id!==key});
+  if(a==="deleteschool")S.schoolChecks=S.schoolChecks.filter(function(x){return x.id!==key});
+  if(a==="deltx")S.transactions=S.transactions.filter(function(x){return x.id!==key});
+  modal=null;if(save()){render();ping("Deleted")}return
+ }
+ if(a==="export"){
+  var file=new Blob([JSON.stringify(S,null,2)],{type:"application/json"}),url=URL.createObjectURL(file),aTag=document.createElement("a");
+  aTag.href=url;aTag.download="Pocket-Money-Backup-"+now()+".json";document.body.append(aTag);aTag.click();aTag.remove();setTimeout(function(){URL.revokeObjectURL(url)},1500);ping("Backup downloaded");return
+ }
+});
+document.addEventListener("submit",function(e){
+ if(e.target.id!=="editor"&&e.target.id!=="settingsForm")return;
+ e.preventDefault();
+ var form=e.target,v=Object.fromEntries(new FormData(form).entries());
+ if(form.id==="settingsForm"){
+  if(v.openingDate>now())return alert("The starting date cannot be in the future.");
+  S.openingBalance=num(v.openingBalance);S.openingDate=v.openingDate;S.savingsTarget=Math.max(0,num(v.savingsTarget));S.horizonDays=Number(v.horizonDays)||45
+ }else if(modal&&modal.type==="tx"){
+  if(!(num(v.amount)>0)||v.date>now()||!v.name.trim())return alert("Enter a name, positive amount, and a date that isn't in the future.");
+  S.transactions.push({id:id(),kind:v.kind,date:v.date,amount:num(v.amount),name:v.name.trim(),linkId:v.linkId||"",scheduledDate:v.scheduledDate||""});
+  if(v.kind==="income"&&v.linkId){var ck=S.schoolChecks.find(function(x){return x.id===v.linkId});if(ck)ck.received=true}
+ }else if(modal&&modal.type==="bill"){
+  if(!v.name.trim()||!(num(v.amount)>0))return alert("Enter the bill name and amount.");
+  var billNew={id:v.id||id(),name:v.name.trim(),amount:num(v.amount),frequency:v.frequency,nextDue:v.nextDue,paidThrough:v.paidThrough||""};
+  S.bills=v.id?S.bills.map(function(x){return x.id===v.id?billNew:x}):S.bills.concat(billNew)
+ }else if(modal&&modal.type==="income"){
+  if(!v.name.trim()||!(num(v.amount)>0))return alert("Enter income name and amount.");
+  var inNew={id:v.id||id(),name:v.name.trim(),amount:num(v.amount),frequency:v.frequency,nextDate:v.nextDate};
+  S.recurringIncome=v.id?S.recurringIncome.map(function(x){return x.id===v.id?inNew:x}):S.recurringIncome.concat(inNew)
+ }else if(modal&&modal.type==="school"){
+  var sNew={id:v.id||id(),officialDate:v.officialDate,expectedDate:v.expectedDate,amount:v.amount===""?null:Math.max(0,num(v.amount)),received:v.received==="yes"};
+  S.schoolChecks=v.id?S.schoolChecks.map(function(x){return x.id===v.id?sNew:x}):S.schoolChecks.concat(sNew)
+ }
+ modal=null;if(save()){render();ping("Saved")}
+});
+try{var fromStore=localStorage.getItem(STORE);S=fromStore?JSON.parse(fromStore):null;if(S)normalize()}catch(e){S=null}
+render();
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js").catch(function(){})})}
+})();
+</script>
+</body>
+</html>
