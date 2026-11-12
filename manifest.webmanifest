@@ -1,0 +1,18 @@
+{
+  "name": "Pocket Money – Personal Budget",
+  "short_name": "Pocket Money",
+  "description": "Personal bills, school paydays and safe-to-spend planner.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f8f7",
+  "theme_color": "#153c43",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
